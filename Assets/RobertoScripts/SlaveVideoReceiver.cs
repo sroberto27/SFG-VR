@@ -41,7 +41,7 @@ public class SlaveVideoReceiver : MonoBehaviour
             {
                 Debug.Log("Video frame received! Texture size: " + texture.width + "x" + texture.height);
                 if (rawImage != null)
-                {RTCEncodedVideoFrame
+                {
                     rawImage.texture = texture;
                     rawImage.color = Color.white; // Ensure the RawImage is visible
                     Debug.Log("Texture assigned to RawImage");
