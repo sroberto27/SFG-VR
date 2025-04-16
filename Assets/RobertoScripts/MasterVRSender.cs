@@ -12,7 +12,7 @@ public class MasterVRSender : MonoBehaviour
     UdpClient udpLeft;
     //UdpClient udpRight;
     IPEndPoint epLeft = new IPEndPoint(IPAddress.Parse("10.230.198.90"), 9060); // IP of Slave Left
-    //IPEndPoint epRight = new IPEndPoint(IPAddress.Parse("192.168.1.102"), 9050); // IP of Slave Right
+    //IPEndPoint epRight = new IPEndPoint(IPAddress.Parse("192.168.1.102"), 9060); // IP of Slave Right
 
     void Start()
     {

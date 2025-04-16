@@ -62,7 +62,7 @@ public class MasterVRReceiver : MonoBehaviour
 
                 UnityMainThreadDispatcher.Instance().Enqueue(() =>
                 {
-                    if (client.Client.RemoteEndPoint.ToString().Contains("192.168.1.101"))
+                    if (client.Client.RemoteEndPoint.ToString().Contains("10.230.198.90"))
                         leftTexture.SetPixels32(tex.GetPixels32());
                     else
                         rightTexture.SetPixels32(tex.GetPixels32());
