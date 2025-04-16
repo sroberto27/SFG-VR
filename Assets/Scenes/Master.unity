@@ -1360,6 +1360,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 2253185912186733546, guid: ca29ca4684e505e42a9c88b964557899, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 2253185912933138747, guid: ca29ca4684e505e42a9c88b964557899, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
@@ -4241,6 +4245,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bce16c35928a1b44bb802bbe0eb27d92, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  myreciver: {fileID: 321434985}
   vrCamera: {fileID: 1094663147}
   signalingServerUrl: ws://10.131.80.244:8080
 --- !u!4 &393501622
@@ -11779,6 +11784,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8495582284782813044, guid: 659dd17b72cd94b55ab79a6d3777fe4c, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8495582285252669367, guid: 659dd17b72cd94b55ab79a6d3777fe4c, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8495582285719126554, guid: 659dd17b72cd94b55ab79a6d3777fe4c, type: 3}
+      propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
@@ -20104,7 +20117,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.02e-43, y: 4.39e-43, z: 2.368e-42, w: 9.403955e-38}
+  m_BoundingSphereOverride: {x: 1.02e-43, y: 1e-45, z: 7.339e-42, w: 7.34684e-40}
   m_UseBoundingSphereOverride: 0
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0

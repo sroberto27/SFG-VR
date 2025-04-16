@@ -38,6 +38,7 @@ wss.on('connection', function connection(ws) {
         if (data.type === 'register') {
             if (data.role === 'master') {
                 masters[id] = ws;
+                logWithTime(`🟢 [MASTER] ${id} connected`);
                 console.log(`🟢 Client ${id} registered as master`);
 
                 // Notify all slaves about the new master
@@ -51,6 +52,7 @@ wss.on('connection', function connection(ws) {
 
             } else if (data.role === 'slave') {
                 slaves[id] = ws;
+                logWithTime(`🔵 [SLAVE] ${id} connected`);
                 console.log(`🔵 Client ${id} registered as slave`);
 
                 // Notify all masters about the new slave
@@ -70,13 +72,16 @@ wss.on('connection', function connection(ws) {
         const targetId = data.target;
 
         if (targetId && peers[targetId]) {
-            peers[targetId].send(JSON.stringify({
-                from: id,           // sender ID
-                type: data.type,    // message type: offer, answer, ice
-                payload: data.payload // actual SDP/ICE payload
-            }));
+            const relayPayload = {
+                from: id,                  // sender ID
+                type: data.type,          // message type: offer, answer, ice, etc.
+                payload: data.payload     // actual data being sent
+            };
+
+            peers[targetId].send(JSON.stringify(relayPayload));
 
             console.log(`➡️ Relayed ${data.type} from ${id} to ${targetId}`);
+            console.log('📦 Payload content:\n', JSON.stringify(data.payload, null, 2)); // pretty print
         } else {
             console.warn(`⚠️ Target peer ${targetId} not found for ${data.type}`);
         }
@@ -105,3 +110,8 @@ wss.on('connection', function connection(ws) {
 function generateId() {
     return Math.random().toString(36).substr(2, 9);
 }
+function logWithTime(...args) {
+    const now = new Date().toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
+    console.log(`[${now}]`, ...args);
+}
+

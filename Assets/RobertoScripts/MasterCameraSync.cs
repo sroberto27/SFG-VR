@@ -11,7 +11,7 @@ using WS = WebSocketSharp;
 
 public class MasterCameraSync : MonoBehaviour
 {
-   
+    public SlaveVideoReceiver myreciver;
 
     public Camera vrCamera;
     public string signalingServerUrl = "ws://localhost:8080";
@@ -98,7 +98,7 @@ public class MasterCameraSync : MonoBehaviour
         peer.OnTrack = e =>
         {
             Debug.Log("MASTER: Track received of type: " + e.Track.Kind);
-
+            myreciver.OnTrackReceived(e);
             // Find and notify all SlaveVideoReceiver components
             SlaveVideoReceiver[] receivers = FindObjectsOfType<SlaveVideoReceiver>();
 
@@ -162,7 +162,9 @@ public class MasterCameraSync : MonoBehaviour
             rot = vrCamera.transform.rotation
         };
 
+
         string json = JsonUtility.ToJson(camPose);
+        Debug.Log("[Master -> Slaves] Sending CameraPose: " + json);
         foreach (var dc in dataChannels)
         {
             if (dc.ReadyState == RTCDataChannelState.Open)

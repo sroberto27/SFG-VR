@@ -139,7 +139,7 @@ public class RenderNodeReceiver : MonoBehaviour
     void OnCameraPoseReceived(byte[] data)
     {
         string json = System.Text.Encoding.UTF8.GetString(data);
-
+        Debug.Log("[Slave] Received data: " + json);
         if (json.Contains("pos"))
         {
             CameraPose camPose = JsonUtility.FromJson<CameraPose>(json);
@@ -163,6 +163,7 @@ public class RenderNodeReceiver : MonoBehaviour
         };
 
         string json = JsonUtility.ToJson(msg);
+        Debug.Log($"[SEND] {type} to {targetId} | Payload: {json}");
         ws.Send(json);
     }
     [System.Serializable]
