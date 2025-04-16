@@ -5,43 +5,46 @@ const WebSocket = require('ws');
 const wss = new WebSocket.Server({ port: 8080 });
 console.log('🚀 Signaling server started on ws://localhost:8080');
 
-// A simple object to store connected clients
-let peers = {};
-let masters = {};
-let slaves = {};
+// Client tracking
+let peers = {};      // id → ws
+let masters = {};    // id → ws
+let slaves = {};     // id → ws
+let roles = {};      // id → 'master' | 'slave'
 
-// Fires when a new client connects
+// Connection handler
 wss.on('connection', function connection(ws) {
-    // Generate a unique ID for the connecting client
     const id = generateId();
-
-    // Store the client's WebSocket connection in our peers list
     peers[id] = ws;
-    console.log(`✅ New client connected with ID: ${id}`);
+    logWithTime(`✅ New client connected: [${id}]`);
 
-    // Send the ID back to the client so they know their identifier
-    ws.send(JSON.stringify({ type: 'id', id: id }));
+    // Send client its ID
+    ws.send(JSON.stringify({ type: 'id', id }));
 
-    // Fires whenever a client sends a message to the server
+    // On message from client
     ws.on('message', function incoming(message) {
         let data;
 
-        // Try parsing the message as JSON
         try {
             data = JSON.parse(message);
         } catch (e) {
-            console.error('❌ Invalid JSON received:', e);
+            logWithTime(`❌ Invalid JSON from ${id}:`, message);
             return;
         }
 
-        // Handle registration message
-        if (data.type === 'register') {
-            if (data.role === 'master') {
-                masters[id] = ws;
-                logWithTime(`🟢 [MASTER] ${id} connected`);
-                console.log(`🟢 Client ${id} registered as master`);
+        if (Object.keys(data).length === 0) {
+            logWithTime(`⚠️ Ignored empty message from ${id}`);
+            return;
+        }
 
-                // Notify all slaves about the new master
+        // Registration message
+        if (data.type === 'register') {
+            const role = data.role;
+            roles[id] = role;
+
+            if (role === 'master') {
+                masters[id] = ws;
+                logWithTime(`🟢 [MASTER] ${id} registered`);
+                // Notify all slaves
                 Object.keys(slaves).forEach(slaveId => {
                     slaves[slaveId].send(JSON.stringify({
                         type: 'remote_connected',
@@ -49,13 +52,10 @@ wss.on('connection', function connection(ws) {
                         role: 'master'
                     }));
                 });
-
-            } else if (data.role === 'slave') {
+            } else if (role === 'slave') {
                 slaves[id] = ws;
-                logWithTime(`🔵 [SLAVE] ${id} connected`);
-                console.log(`🔵 Client ${id} registered as slave`);
-
-                // Notify all masters about the new slave
+                logWithTime(`🔵 [SLAVE] ${id} registered`);
+                // Notify all masters
                 Object.keys(masters).forEach(masterId => {
                     masters[masterId].send(JSON.stringify({
                         type: 'remote_connected',
@@ -63,40 +63,62 @@ wss.on('connection', function connection(ws) {
                         role: 'slave'
                     }));
                 });
+            } else {
+                logWithTime(`⚠️ Unknown role: ${role} from ${id}`);
             }
 
-            return; // Registration handled, exit here
+            return;
         }
 
-        // Relay messages between peers (offer, answer, ice)
-        const targetId = data.target;
+        // Relay message
+        const { type, target, payload } = data;
+        if (!type || !target || !payload) {
+            logWithTime(`⚠️ Malformed message from ${id}`);
+            logWithTime(`🔍 Message content:`, JSON.stringify(data, null, 2));
+            return;
+        }
 
-        if (targetId && peers[targetId]) {
-            const relayPayload = {
-                from: id,                  // sender ID
-                type: data.type,          // message type: offer, answer, ice, etc.
-                payload: data.payload     // actual data being sent
+        if (peers[target]) {
+            const relay = {
+                from: id,
+                type,
+                payload
             };
+            peers[target].send(JSON.stringify(relay));
 
-            peers[targetId].send(JSON.stringify(relayPayload));
+            const fromRole = roles[id] || 'unknown';
+            const toRole = roles[target] || 'unknown';
 
-            console.log(`➡️ Relayed ${data.type} from ${id} to ${targetId}`);
-            console.log('📦 Payload content:\n', JSON.stringify(data.payload, null, 2)); // pretty print
+            // Collapsed real-time log
+            console.log(`🔄 ${type.toUpperCase()} | ${fromRole.toUpperCase()} [${id}] → ${toRole.toUpperCase()} [${target}]`);
+
+            // Optional: brief payload description
+            if (payload.pos && payload.rot) {
+                console.log('   🧭 CameraPose sent');
+            } else if (payload.width && payload.height) {
+                console.log('   📐 Partition data sent');
+            } else if (type === 'ice') {
+                console.log('   ❄️ ICE candidate');
+            } else if (type === 'offer') {
+                console.log('   📡 SDP Offer');
+            } else if (type === 'answer') {
+                console.log('   📡 SDP Answer');
+            }
         } else {
-            console.warn(`⚠️ Target peer ${targetId} not found for ${data.type}`);
+            logWithTime(`⚠️ Target peer '${target}' not found for message from ${id} (${type})`);
         }
     });
 
-    // Fires when a client disconnects
+    // On disconnect
     ws.on('close', () => {
-        console.log(`❌ Client disconnected: ${id}`);
+        logWithTime(`❌ Client disconnected: ${id}`);
 
-        // Clean up peers
         delete peers[id];
         delete masters[id];
         delete slaves[id];
+        delete roles[id];
 
-        // Optionally, notify other peers about disconnection
+        // Notify all remaining peers
         Object.keys(peers).forEach(peerId => {
             peers[peerId].send(JSON.stringify({
                 type: 'peer_disconnected',
@@ -106,12 +128,13 @@ wss.on('connection', function connection(ws) {
     });
 });
 
-// Generates a unique 9-character alphanumeric ID
+// Utility: generate unique 9-character ID
 function generateId() {
     return Math.random().toString(36).substr(2, 9);
 }
+
+// Utility: timestamped logging
 function logWithTime(...args) {
-    const now = new Date().toISOString().split("T")[1].split(".")[0]; // HH:MM:SS
+    const now = new Date().toISOString().split("T")[1].split(".")[0];
     console.log(`[${now}]`, ...args);
 }
-

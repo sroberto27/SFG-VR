@@ -40,7 +40,17 @@ public class MasterCameraSync : MonoBehaviour
                 type = "register",
                 role = "master"
             };
-            ws.Send(JsonUtility.ToJson(registerMsg));
+            string json = JsonUtility.ToJson(registerMsg);
+            Debug.Log("Sending register: " + json); //  Optional debug
+            if (!string.IsNullOrEmpty(json))
+            {
+                if (!string.IsNullOrEmpty(json))
+                {
+                    ws.Send(json);
+                }
+
+            }
+
             Debug.Log("? Sent register message as master.");
         };
 
@@ -84,6 +94,7 @@ public class MasterCameraSync : MonoBehaviour
 
     void SetupPeerConnection(string remoteId)
     {
+
         RTCConfiguration config = new RTCConfiguration
         {
             iceServers = new[] { new RTCIceServer { urls = new[] { "stun:stun.l.google.com:19302" } } }
@@ -115,6 +126,8 @@ public class MasterCameraSync : MonoBehaviour
                 Debug.LogError("No SlaveVideoReceiver components found in the scene!");
             }
         };
+        peer.AddTransceiver(TrackKind.Video); // This declares we expect a video track
+
         peer.OnIceCandidate = candidate =>
         {
             SendMessage("ice", remoteId, new IceCandidatePayload
@@ -182,7 +195,15 @@ public class MasterCameraSync : MonoBehaviour
         };
 
         string json = JsonUtility.ToJson(msg);
-        ws.Send(json);
+        if (!string.IsNullOrEmpty(json))
+        {
+            if (!string.IsNullOrEmpty(json))
+            {
+                ws.Send(json);
+            }
+
+        }
+
     }
     [System.Serializable]
     public class SignalingMessage

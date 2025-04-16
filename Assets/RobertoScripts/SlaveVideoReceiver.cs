@@ -39,6 +39,7 @@ public class SlaveVideoReceiver : MonoBehaviour
             // Connect the track directly to the texture
             videoTrack.OnVideoReceived += texture =>
             {
+                Debug.Log("check [SlaveVideoReceiver] Video frame received!");
                 Debug.Log("Video frame received! Texture size: " + texture.width + "x" + texture.height);
                 if (rawImage != null)
                 {
