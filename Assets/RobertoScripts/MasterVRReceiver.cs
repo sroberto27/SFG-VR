@@ -24,7 +24,7 @@ public class MasterVRReceiver : MonoBehaviour
 
     void Start()
     {
-        listener = new TcpListener(IPAddress.Any, 8080);
+        listener = new TcpListener(IPAddress.Any, 55555);
         listener.Start();
         serverThread = new Thread(new ThreadStart(AcceptClients));
         serverThread.IsBackground = true;

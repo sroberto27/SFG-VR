@@ -13,7 +13,7 @@ public class SlaveVRReceiver : MonoBehaviour
     public Camera slaveCamera;
     public RenderTexture outputTexture;
     public string masterIP = "172.24.16.1";
-    public int masterPort = 8080;
+    public int masterPort = 55555;
 
     private UdpClient udpClient;
     private Thread receiveThread;
