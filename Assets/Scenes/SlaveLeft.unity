@@ -3227,7 +3227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slaveCamera: {fileID: 258039598}
   outputTexture: {fileID: 8400000, guid: 2dda12f132b22c34a8a389751194de74, type: 2}
-  masterIP: ' 172.24.16.1'
+  masterIP: 10.231.146.255
   masterPort: 8080
 --- !u!1 &258039597
 GameObject:
