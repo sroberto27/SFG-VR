@@ -15,14 +15,15 @@ public class MasterVRReceiver : MonoBehaviour
 
     private TcpListener listener;
     private Thread serverThread;
-
+    private Texture2D compositeTexture;
     private Texture2D leftTexture;
     private Texture2D rightTexture;
-
+    private Texture2D tempTexture;
     private void Awake()
     {
         leftTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
         rightTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        compositeTexture = new Texture2D(width * 2, height, TextureFormat.RGB24, false);
     }
 
     void Start()
@@ -73,15 +74,22 @@ public class MasterVRReceiver : MonoBehaviour
 
                 UnityMainThreadDispatcher.Instance().Enqueue(() =>
                 {
-                    Texture2D tex = new Texture2D(width, height, TextureFormat.RGB24, false);
-                    tex.LoadImage(imageData);
+                    if (tempTexture == null)
+                        tempTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
 
-                    if (client.Client.RemoteEndPoint.ToString().Contains("10.131.80.176"))
-                        leftTexture.SetPixels32(tex.GetPixels32());
+                    if (tempTexture.LoadImage(imageData))
+                    {
+                        if (client.Client.RemoteEndPoint.ToString().Contains("10.131.80.176"))
+                            leftTexture.SetPixels32(tempTexture.GetPixels32());
+                        else
+                            rightTexture.SetPixels32(tempTexture.GetPixels32());
+
+                        UpdateBlendedTexture();
+                    }
                     else
-                        rightTexture.SetPixels32(tex.GetPixels32());
-
-                    UpdateBlendedTexture();
+                    {
+                        Debug.LogWarning("Failed to decode received image");
+                    }
                 });
             }
             catch (Exception e)
@@ -94,18 +102,21 @@ public class MasterVRReceiver : MonoBehaviour
 
     void UpdateBlendedTexture()
     {
-        Texture2D composite = new Texture2D(width * 2, height, TextureFormat.RGB24, false);
+        //  Avoid creating a new texture
+        //  Just reuse compositeTexture
         Color[] left = leftTexture.GetPixels();
         Color[] right = rightTexture.GetPixels();
-        Color[] combined = new Color[left.Length + right.Length];
+
+        //  We reuse a shared buffer to avoid allocations
+        Color[] combined = compositeTexture.GetPixels(); // reuse internal buffer
 
         Array.Copy(left, 0, combined, 0, left.Length);
         Array.Copy(right, 0, combined, left.Length, right.Length);
 
-        composite.SetPixels(combined);
-        composite.Apply();
+        compositeTexture.SetPixels(combined);
+        compositeTexture.Apply();
 
-        displaySurface.material.mainTexture = composite;
+        displaySurface.material.mainTexture = compositeTexture; //  one shared GPU upload
     }
 
     void OnApplicationQuit()
