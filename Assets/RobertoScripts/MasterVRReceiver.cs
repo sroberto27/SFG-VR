@@ -1,3 +1,130 @@
+// MASTER: Unity C# script running on Meta Quest, receives and blends images from slaves using GPU
+using UnityEngine;
+using System.Net;
+using System.Net.Sockets;
+using System.Threading;
+using System.IO;
+using System;
+using PimDeWitte.UnityMainThreadDispatcher;
+
+public class MasterVRReceiver : MonoBehaviour
+{
+    public Renderer displaySurface; // Material on a curved surface
+    public int width = 1024;
+    public int height = 1024;
+    public Material blendMaterial; // GPU shader that blends textures
+
+    private TcpListener listener;
+    private Thread serverThread;
+
+    private Texture2D leftTexture;
+    private Texture2D rightTexture;
+    private Texture2D tempTexture;
+
+    private RenderTexture blendedOutput;
+
+    private void Awake()
+    {
+        leftTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        rightTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
+        blendedOutput = new RenderTexture(width * 2, height, 0, RenderTextureFormat.ARGB32);
+        blendedOutput.Create();
+    }
+
+    void Start()
+    {
+        try
+        {
+            listener = new TcpListener(IPAddress.Any, 55555);
+            listener.Start();
+            serverThread = new Thread(AcceptClients);
+            serverThread.IsBackground = true;
+            serverThread.Start();
+        }
+        catch (SocketException ex)
+        {
+            Debug.LogError("Port already in use or failed to bind: " + ex.Message);
+        }
+    }
+
+    void AcceptClients()
+    {
+        while (true)
+        {
+            try
+            {
+                TcpClient client = listener.AcceptTcpClient();
+                Thread clientThread = new Thread(() => HandleClient(client));
+                clientThread.IsBackground = true;
+                clientThread.Start();
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Client accept failed: " + e.Message);
+            }
+        }
+    }
+
+    void HandleClient(TcpClient client)
+    {
+        NetworkStream stream = client.GetStream();
+        BinaryReader reader = new BinaryReader(stream);
+
+        while (true)
+        {
+            try
+            {
+                int length = reader.ReadInt32();
+                byte[] imageData = reader.ReadBytes(length);
+
+                UnityMainThreadDispatcher.Instance().Enqueue(() =>
+                {
+                    if (tempTexture == null)
+                        tempTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
+
+                    if (tempTexture.LoadImage(imageData))
+                    {
+                        if (client.Client.RemoteEndPoint.ToString().Contains("10.131.80.176"))
+                            leftTexture.SetPixels32(tempTexture.GetPixels32());
+                        else
+                            rightTexture.SetPixels32(tempTexture.GetPixels32());
+
+                        leftTexture.Apply();
+                        rightTexture.Apply();
+
+                        UpdateBlendedTexture();
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Failed to decode received image");
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Debug.LogError("Client dropped: " + e.Message);
+                return;
+            }
+        }
+    }
+
+    void UpdateBlendedTexture()
+    {
+        blendMaterial.SetTexture("_LeftTex", leftTexture);
+        blendMaterial.SetTexture("_RightTex", rightTexture);
+        Graphics.Blit(null, blendedOutput, blendMaterial);
+        displaySurface.material.mainTexture = blendedOutput;
+    }
+
+    void OnApplicationQuit()
+    {
+        serverThread?.Abort();
+        listener?.Stop();
+    }
+}
+
+
+/*
 // MASTER: Unity C# script running on Meta Quest, receives images from slaves and displays stitched view
 using UnityEngine;
 using System.Net;
@@ -126,8 +253,7 @@ public class MasterVRReceiver : MonoBehaviour
     }
 }
 
-
-/*// MASTER: Unity C# script running on Meta Quest, receives images from slaves and displays stitched view
+// MASTER: Unity C# script running on Meta Quest, receives images from slaves and displays stitched view
 using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
