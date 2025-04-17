@@ -1,4 +1,4 @@
-// MASTER: Unity C# script running on Meta Quest, receives and blends images from slaves using GPU
+/*// MASTER: Unity C# script running on Meta Quest, receives and blends images from slaves using GPU
 using UnityEngine;
 using System.Net;
 using System.Net.Sockets;
@@ -124,7 +124,7 @@ public class MasterVRReceiver : MonoBehaviour
 }
 
 
-/*
+*/
 // MASTER: Unity C# script running on Meta Quest, receives images from slaves and displays stitched view
 using UnityEngine;
 using System.Net;
@@ -252,7 +252,7 @@ public class MasterVRReceiver : MonoBehaviour
         listener?.Stop();
     }
 }
-
+/*
 // MASTER: Unity C# script running on Meta Quest, receives images from slaves and displays stitched view
 using UnityEngine;
 using System.Net;

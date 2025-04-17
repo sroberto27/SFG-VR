@@ -1,9 +1,8 @@
-Shader "Custom/CurvedBlendDual"
+Shader "Custom/CurvedBlend"
 {
     Properties
     {
-        _LeftTex ("Left Half", 2D) = "white" {}
-        _RightTex ("Right Half", 2D) = "white" {}
+        _MainTex ("Stitched Texture", 2D) = "white" {}
         _Curvature ("Curvature", Range(0.0, 2.0)) = 1.0
     }
 
@@ -31,8 +30,8 @@ Shader "Custom/CurvedBlendDual"
                 float4 vertex : SV_POSITION;
             };
 
-            sampler2D _LeftTex;
-            sampler2D _RightTex;
+            sampler2D _MainTex;
+            float4 _MainTex_ST;
             float _Curvature;
 
             v2f vert (appdata v)
@@ -41,21 +40,13 @@ Shader "Custom/CurvedBlendDual"
                 float curve = sin((v.uv.x - 0.5) * _Curvature * 3.14159);
                 v.vertex.xyz += float3(0, 0, curve * 0.5);
                 o.vertex = UnityObjectToClipPos(v.vertex);
-                o.uv = v.uv;
+                o.uv = TRANSFORM_TEX(v.uv, _MainTex);
                 return o;
             }
 
             fixed4 frag (v2f i) : SV_Target
             {
-                float2 uv = i.uv;
-                if (uv.x < 0.5)
-                {
-                    return tex2D(_LeftTex, float2(uv.x * 2, uv.y));
-                }
-                else
-                {
-                    return tex2D(_RightTex, float2((uv.x - 0.5) * 2, uv.y));
-                }
+                return tex2D(_MainTex, i.uv);
             }
             ENDCG
         }
