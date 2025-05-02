@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Master.unity
     guid: 55daccc09a3b69647bbab145b54a3ab3
+  - enabled: 0
+    path: Assets/Scenes/LeftSlave.unity
+    guid: eb2d7e71cc7362c499e51dccfe2f5396
+  - enabled: 0
+    path: Assets/Scenes/RightSlave.unity
+    guid: 8d91b581e58b1a04c94ac55016d2c471
   m_configObjects:
     Unity.XR.Oculus.Settings: {fileID: 11400000, guid: bfa1182bd221b4ca89619141f66f1260, type: 2}
     Unity.XR.WindowsMR.Settings: {fileID: 11400000, guid: dc5a169419fa04987b057f65238cf3ba, type: 2}
