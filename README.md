@@ -55,7 +55,7 @@ Their repository: https://github.com/lizhang20/SFG
 ## 🧪 Requirements
 
 - Unity 2022.3+ with XR Plugin Management and OpenXR
-- Meta Quest (tested with Quest 3)
+- Meta Quest (tested with Quest Pro)
 - Two networked Windows PCs with GPU
 - All devices must be on the same LAN
 
