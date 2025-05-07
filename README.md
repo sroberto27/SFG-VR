@@ -39,7 +39,7 @@ Their repository: https://github.com/lizhang20/SFG
 ### 🖥 `SlaveVRReceiver.cs`
 - Receives camera transform and viewport scissor rectangle via UDP.
 - Applies it to a local camera.
-- Captures the appropriate region of a `RenderTexture`, encodes it to JPG, and sends it via TCP to the master.
+- Captures the appropriate region of a `RenderTexture`, encodes, and sends it via TCP to the master.
 
 ### ⚙️ `NetworkConfig.cs`
 - Holds runtime-configurable IP addresses for master, left slave, and right slave.
