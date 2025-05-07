@@ -21,7 +21,7 @@ Their repository: https://github.com/lizhang20/SFG
 - **Left and Right Slaves (Windows PCs)**:
   - Receive camera parameters and rendering scissor regions via UDP.
   - Render respective scene segments.
-  - Stream JPEG-encoded textures back to the master.
+  - Stream textures back to the master.
 
 ---
 
