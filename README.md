@@ -127,7 +127,15 @@ Streaming, compression, and reconstruction are still **unoptimized** and may not
 ```
 
 ---
+## 🖼 Visual Overview
 
+Here’s how the system looks in action:
+
+### 👓 Master (Meta Quest View)
+![Master View](pics/master.jpg)
+
+### 🖥️ Left/Right Slave Rendering
+![Left Slave](pics/slave.jpg)
 ## 🧠 Author
 
 **Roberto Salazar**  
